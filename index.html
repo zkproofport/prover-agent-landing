@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>proveragent.base.eth | ZKProofport</title>
+<meta name="description" content="Autonomous ZK proof generation. ERC-8004 identity. x402 payments. Powered by ZKProofport.">
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6KDER26ZCC"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-6KDER26ZCC');
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+/* ============================================
+   RESET & ROOT — Proofport Design System
+   ============================================ */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --bg: #0a0e14;
+  --surface: #0e1219;
+  --surface2: #121820;
+  --border: rgba(214,177,92,0.15);
+  --border-subtle: rgba(255,255,255,0.06);
+  --cream: #e8dcc8;
+  --muted: #5a6577;
+  --gold: #d6b15c;
+  --gold-2: #f0d488;
+  --purple: #a78bfa;
+  --blue: #60a5fa;
+  --orange: #f59e0b;
+  --red: #f87171;
+  --cyan: #22d3ee;
+  --mono: 'JetBrains Mono', ui-monospace, monospace;
+  --serif: 'DM Serif Display', Georgia, serif;
+}
+html { font-size: 62.5%; scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--cream);
+  font-family: var(--mono);
+  font-size: 1.6rem;
+  line-height: 1.55;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+::selection { background: var(--gold); color: #000; }
+
+/* ============================================
+   NOISE + DOT MATRIX OVERLAYS
+   ============================================ */
+.noise {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 256px 256px;
+}
+.dot-matrix {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  opacity: 0.04;
+  background-image: radial-gradient(circle, var(--gold) 0.8px, transparent 0.8px);
+  background-size: 28px 28px;
+  mask-image: radial-gradient(ellipse 70% 60% at 80% 20%, black, transparent);
+  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 80% 20%, black, transparent);
+}
+
+/* ============================================
+   TOP BAR
+   ============================================ */
+.top-bar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.4rem 2.8rem;
+  height: 5rem;
+  background: linear-gradient(180deg, rgba(10,14,20,0.85), rgba(10,14,20,0.45));
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+.top-bar-inner {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.top-bar-logo {
+  width: 28px;
+  height: auto;
+  border-radius: 6px;
+}
+.top-bar-brand {
+  font-family: var(--mono);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--cream);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.top-bar-brand span {
+  color: var(--muted);
+  font-weight: 400;
+  text-transform: none;
+}
+
+/* ============================================
+   HERO
+   ============================================ */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 6rem 2rem;
+  position: relative;
+}
+.hero-pre {
+  font-family: var(--mono);
+  font-size: 1.3rem;
+  color: var(--muted);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 2.4rem;
+  opacity: 0;
+  animation: fadeUp 0.6s 0.5s forwards;
+}
+.hero-title {
+  font-family: var(--serif);
+  font-size: clamp(4rem, 7vw, 8rem);
+  font-weight: 400;
+  font-style: italic;
+  letter-spacing: -0.5px;
+  text-align: center;
+  margin-bottom: 1.2rem;
+  color: var(--gold-2);
+  opacity: 0;
+  animation: fadeUp 0.8s 0.8s forwards;
+}
+.hero-subtitle {
+  font-family: var(--mono);
+  font-size: clamp(1.5rem, 2vw, 1.9rem);
+  color: var(--muted);
+  text-align: center;
+  max-width: 60rem;
+  margin-bottom: 3.2rem;
+  line-height: 1.7;
+  opacity: 0;
+  animation: fadeUp 0.8s 1.1s forwards;
+}
+.hero-tagline {
+  font-size: 1.3rem;
+  font-family: var(--mono);
+  color: var(--gold);
+  border: 1.5px solid var(--border);
+  background: rgba(214,177,92,0.04);
+  padding: 1rem 2.4rem;
+  letter-spacing: 0.08em;
+  opacity: 0;
+  animation: fadeUp 0.6s 1.5s forwards;
+}
+.hero-tagline strong { font-weight: 700; }
+.hero-scroll {
+  position: absolute;
+  bottom: 3.2rem;
+  font-family: var(--mono);
+  font-size: 1.1rem;
+  color: var(--muted);
+  letter-spacing: 0.15em;
+  opacity: 0;
+  animation: fadeUp 0.6s 2s forwards, pulse 2s 2s infinite;
+}
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(16px); }
+  to { opacity:1; transform:translateY(0); }
+}
+@keyframes pulse {
+  0%, 100% { opacity:1; }
+  50% { opacity:0.4; }
+}
+
+/* ============================================
+   SECTION LAYOUT
+   ============================================ */
+section {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 8rem 2.4rem;
+  position: relative;
+  z-index: 1;
+}
+.section-label {
+  font-family: var(--mono);
+  font-size: 1.3rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 1.2rem;
+  font-weight: 600;
+}
+.section-title {
+  font-family: var(--serif);
+  font-size: clamp(3rem, 4.5vw, 4.8rem);
+  font-weight: 400;
+  margin-bottom: 1.6rem;
+  line-height: 1.15;
+  color: var(--cream);
+}
+.section-desc {
+  font-size: 1.6rem;
+  color: var(--muted);
+  max-width: 62rem;
+  margin-bottom: 4.8rem;
+  line-height: 1.7;
+}
+.section-desc strong { color: var(--cream); font-weight: 600; }
+
+/* ============================================
+   THE PROBLEM
+   ============================================ */
+.problem {
+  text-align: center;
+  padding: 10rem 2.4rem;
+}
+.problem-statement {
+  font-family: var(--serif);
+  font-size: clamp(2.2rem, 3.5vw, 3.6rem);
+  font-weight: 400;
+  line-height: 1.5;
+  max-width: 80rem;
+  margin: 0 auto 3.2rem;
+  color: var(--muted);
+}
+.problem-statement em {
+  font-style: normal;
+  color: var(--cream);
+  font-weight: 400;
+}
+.problem-statement .strike {
+  text-decoration: line-through;
+  color: var(--red);
+  opacity: 0.5;
+}
+.problem-answer {
+  font-family: var(--mono);
+  font-size: 1.8rem;
+  color: var(--gold);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+/* ============================================
+   PROTOCOL FLOW
+   ============================================ */
+.flow-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  flex-wrap: nowrap;
+  margin: 4.8rem 0;
+}
+.flow-node {
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  padding: 1.6rem 1.2rem;
+  text-align: center;
+  min-width: 120px;
+  flex: 1;
+  position: relative;
+  transition: all 0.3s;
+  overflow: visible;
+}
+.flow-node:hover {
+  border-color: var(--gold);
+  box-shadow: 0 0 3rem rgba(214,177,92,0.08);
+  transform: translateY(-2px);
+}
+.flow-node .node-icon {
+  font-size: 1.3rem;
+  margin-bottom: 0.8rem;
+  font-family: var(--mono);
+  color: var(--muted);
+}
+.flow-node .node-label {
+  font-family: var(--mono);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--cream);
+  margin-bottom: 0.4rem;
+  white-space: nowrap;
+}
+.flow-node .node-sub {
+  font-size: 1.1rem;
+  color: var(--muted);
+}
+.flow-arrow {
+  font-family: var(--mono);
+  color: var(--gold);
+  font-size: 1.8rem;
+  padding: 0 0.8rem;
+  opacity: 0.4;
+  flex-shrink: 0;
+}
+.flow-arrow.animated {
+  animation: arrowPulse 1.5s ease-in-out infinite;
+}
+@keyframes arrowPulse {
+  0%, 100% { opacity:0.3; color: var(--muted); }
+  50% { opacity:1; color: var(--gold); }
+}
+@media (max-width: 768px) {
+  .flow-container { flex-direction: column; gap: 0; }
+  .flow-arrow { transform: rotate(90deg); padding: 0.8rem 0; }
+}
+
+/* ============================================
+   REGISTRY CARDS
+   ============================================ */
+.registry-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5px;
+  background: var(--border);
+  overflow: hidden;
+  margin: 4.8rem 0;
+}
+@media (max-width: 768px) {
+  .registry-grid { grid-template-columns: 1fr; }
+}
+.registry-card {
+  background: var(--surface);
+  padding: 2.8rem 2.4rem;
+  position: relative;
+  transition: all 0.3s;
+}
+.registry-card:hover {
+  background: var(--surface2);
+}
+.registry-card .card-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.6rem;
+}
+.registry-card .card-icon {
+  width: 3.6rem; height: 3.6rem;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+  font-family: var(--mono);
+  font-weight: 700;
+}
+.registry-card .card-title {
+  font-family: var(--mono);
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--cream);
+}
+.registry-card .card-subtitle {
+  font-size: 1.2rem;
+  color: var(--muted);
+}
+.registry-card .card-body {
+  font-family: var(--mono);
+  font-size: 1.3rem;
+  color: var(--muted);
+  line-height: 2;
+}
+.registry-card .card-body .val {
+  color: var(--cream);
+}
+.registry-card .card-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--mono);
+  font-size: 1rem;
+  padding: 0.4rem 1rem;
+  margin-top: 1.4rem;
+  letter-spacing: 0.08em;
+}
+.status-live {
+  background: rgba(214,177,92,0.08);
+  color: var(--gold);
+  border: 1px solid var(--border);
+}
+.status-next {
+  background: rgba(96,165,250,0.08);
+  color: var(--blue);
+  border: 1px solid rgba(96,165,250,0.2);
+}
+.status-soon {
+  background: rgba(245,158,11,0.08);
+  color: var(--orange);
+  border: 1px solid rgba(245,158,11,0.2);
+}
+.status-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.status-live .status-dot { background: var(--gold); box-shadow: 0 0 6px var(--gold); }
+.status-next .status-dot { background: var(--blue); }
+.status-soon .status-dot { background: var(--orange); }
+
+/* ============================================
+   TERMINAL
+   ============================================ */
+.terminal {
+  background: #080a10;
+  border: 1.5px solid var(--border);
+  overflow: hidden;
+  margin: 4.8rem 0;
+  box-shadow: 0 2rem 6rem rgba(0,0,0,0.5);
+}
+.terminal-bar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 1rem 1.6rem;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+.terminal-dots { display:flex; gap:0.6rem; }
+.terminal-dots span {
+  width: 10px; height: 10px; border-radius: 50%;
+}
+.terminal-dots .d1 { background: var(--red); }
+.terminal-dots .d2 { background: var(--orange); }
+.terminal-dots .d3 { background: var(--gold); }
+.terminal-title {
+  font-family: var(--mono);
+  font-size: 1.1rem;
+  color: var(--muted);
+  margin-left: 0.8rem;
+}
+.terminal-body {
+  padding: 2rem;
+  font-family: var(--mono);
+  font-size: 1.2rem;
+  line-height: 2;
+  min-height: 28rem;
+  max-height: 40rem;
+  overflow-y: auto;
+}
+.terminal-body::-webkit-scrollbar { width: 4px; }
+.terminal-body::-webkit-scrollbar-track { background: transparent; }
+.terminal-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+.t-dim { color: var(--muted); }
+.t-green { color: var(--gold); }
+.t-blue { color: var(--cyan); }
+.t-orange { color: var(--orange); }
+.t-purple { color: var(--purple); }
+.t-white { color: var(--cream); }
+.t-red { color: var(--red); }
+.cursor-blink::after {
+  content: '█';
+  animation: blink 1s step-end infinite;
+  color: var(--gold);
+}
+@keyframes blink {
+  0%, 100% { opacity:1; }
+  50% { opacity:0; }
+}
+
+/* ============================================
+   AGENT SPEC — TWO-COLUMN
+   ============================================ */
+.spec-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5px;
+  background: var(--border);
+  overflow: hidden;
+  margin: 4.8rem 0;
+}
+@media (max-width: 768px) {
+  .spec-grid { grid-template-columns: 1fr; }
+}
+.spec-block {
+  background: var(--surface);
+  padding: 3.2rem 2.8rem;
+}
+.spec-block h3 {
+  font-family: var(--mono);
+  font-size: 1.2rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 2rem;
+  font-weight: 600;
+}
+.spec-block h3.red-label { color: var(--red); }
+.spec-row {
+  display: flex;
+  align-items: baseline;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 1.4rem;
+}
+.spec-row:last-child { border-bottom: none; }
+.spec-key {
+  font-family: var(--mono);
+  color: var(--muted);
+  font-size: 1.3rem;
+  min-width: 12rem;
+  flex-shrink: 0;
+}
+.spec-val {
+  color: var(--cream);
+  font-family: var(--mono);
+  font-size: 1.3rem;
+}
+
+/* ============================================
+   CIRCUIT CARDS
+   ============================================ */
+.circuit-track {
+  display: flex;
+  gap: 1.6rem;
+  overflow-x: auto;
+  padding: 0.8rem 0 2rem;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+.circuit-track::-webkit-scrollbar { height: 3px; }
+.circuit-track::-webkit-scrollbar-track { background: transparent; }
+.circuit-track::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+.circuit-card {
+  min-width: 22rem;
+  flex: 1;
+  flex-shrink: 0;
+  scroll-snap-align: start;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  padding: 2.4rem 2rem;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+.circuit-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+}
+.circuit-card.live::before { background: var(--gold); }
+.circuit-card.next::before { background: var(--blue); }
+.circuit-card.soon::before { background: var(--orange); }
+.circuit-card:hover {
+  border-color: var(--gold);
+  transform: translateY(-3px);
+}
+.circuit-card .cc-icon {
+  font-size: 1.3rem;
+  margin-bottom: 1.2rem;
+  font-family: var(--mono);
+  color: var(--muted);
+}
+.circuit-card .cc-name {
+  font-family: var(--mono);
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--cream);
+  margin-bottom: 0.4rem;
+}
+.circuit-card .cc-desc {
+  font-size: 1.2rem;
+  color: var(--muted);
+  margin-bottom: 1.4rem;
+  line-height: 1.6;
+}
+.circuit-card .cc-tag {
+  font-family: var(--mono);
+  font-size: 1rem;
+  padding: 0.3rem 0.8rem;
+  letter-spacing: 0.06em;
+}
+.cc-tag.live { background: rgba(214,177,92,0.08); color: var(--gold); border: 1px solid var(--border); }
+.cc-tag.next { background: rgba(96,165,250,0.08); color: var(--blue); border: 1px solid rgba(96,165,250,0.2); }
+.cc-tag.soon { background: rgba(245,158,11,0.08); color: var(--orange); border: 1px solid rgba(245,158,11,0.2); }
+
+/* ============================================
+   CTA
+   ============================================ */
+.cta-section {
+  text-align: center;
+  padding: 10rem 2.4rem;
+  position: relative;
+}
+.cta-section::before {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 60rem; height: 40rem;
+  background: radial-gradient(ellipse, rgba(214,177,92,0.05), transparent 70%);
+  pointer-events: none;
+}
+.cta-ens {
+  font-family: var(--serif);
+  font-size: clamp(3.2rem, 5vw, 6rem);
+  font-weight: 400;
+  font-style: italic;
+  color: var(--gold-2);
+  margin-bottom: 2rem;
+}
+.cta-line {
+  font-size: 1.5rem;
+  color: var(--muted);
+  margin-bottom: 3.2rem;
+  line-height: 1.7;
+}
+.cta-line strong { color: var(--cream); font-weight: 600; }
+.cta-links {
+  display: flex;
+  gap: 1.6rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.cta-btn {
+  font-family: var(--mono);
+  font-size: 1.3rem;
+  padding: 1rem 2.4rem;
+  border: 1.5px solid var(--border);
+  background: transparent;
+  color: var(--cream);
+  text-decoration: none;
+  transition: all 0.3s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+}
+.cta-btn:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+  box-shadow: 0 0 2rem rgba(214,177,92,0.08);
+}
+.cta-btn.primary {
+  background: var(--gold);
+  color: #0a0e14;
+  border-color: var(--gold);
+  font-weight: 700;
+}
+.cta-btn.primary:hover {
+  background: var(--gold-2);
+  border-color: var(--gold-2);
+  color: #0a0e14;
+}
+
+/* ============================================
+   HIGHLIGHT BOX
+   ============================================ */
+.highlight-box {
+  background: rgba(214,177,92,0.03);
+  border: 1.5px solid var(--border);
+  padding: 3.2rem;
+  margin: 4.8rem 0;
+  position: relative;
+  overflow: hidden;
+}
+.highlight-box::before {
+  content: '';
+  position: absolute; top:0; left:0; right:0; height:2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+.highlight-box .hb-label {
+  font-family: var(--mono);
+  font-size: 1.1rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  font-weight: 600;
+}
+.highlight-box .hb-logo {
+  width: 22px;
+  height: auto;
+  border-radius: 3px;
+}
+.highlight-box .hb-text {
+  font-size: 1.7rem;
+  font-weight: 400;
+  line-height: 1.7;
+  color: var(--cream);
+}
+.highlight-box .hb-text strong {
+  color: var(--gold-2);
+  font-weight: 700;
+}
+
+/* ============================================
+   FOOTER
+   ============================================ */
+footer {
+  text-align: center;
+  padding: 3.2rem 2.4rem;
+  font-family: var(--mono);
+  font-size: 1.2rem;
+  color: var(--muted);
+  border-top: 1px solid var(--border);
+  position: relative;
+  z-index: 1;
+}
+footer a {
+  color: var(--gold-2);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(240,212,136,0.3);
+}
+footer a:hover {
+  border-color: var(--gold-2);
+}
+
+/* ============================================
+   REVEAL & UTILITIES
+   ============================================ */
+.reveal {
+  opacity: 0;
+  transform: translateY(3rem);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.sep {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
+  max-width: 80rem;
+  margin: 0 auto;
+}
+.glow-line {
+  width: 12rem;
+  height: 2px;
+  background: linear-gradient(90deg, var(--gold), var(--gold-2));
+  margin: 0 auto 3.2rem;
+  opacity: 0.6;
+}
+
+/* TEE badge */
+.tee-badge {
+  position: absolute; top: -1.4rem; left: 50%; transform: translateX(-50%);
+  background: linear-gradient(135deg, var(--gold), var(--gold-2));
+  color: #0a0e14;
+  font-size: 1rem;
+  padding: 0.4rem 1.2rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  box-shadow: 0 0 1.2rem rgba(214,177,92,0.4), 0 2px 8px rgba(0,0,0,0.3);
+}
+</style>
+</head>
+<body>
+
+<div class="noise"></div>
+<div class="dot-matrix"></div>
+
+<!-- ==============================
+     TOP BAR
+     ============================== -->
+<div class="top-bar">
+  <div class="top-bar-inner">
+    <img src="logo.jpg" alt="ZKProofport" class="top-bar-logo">
+    <div class="top-bar-brand">ZKProofport <span>/ prover agent</span></div>
+  </div>
+</div>
+
+<!-- ==============================
+     HERO
+     ============================== -->
+<header class="hero">
+  <div class="hero-pre">zkproofport · next chapter</div>
+  <h1 class="hero-title">proveragent.base.eth</h1>
+  <p class="hero-subtitle">Autonomous ZK proof generation.<br>Discoverable. Verifiable. Payable.</p>
+  <div class="hero-tagline"><strong style="color:var(--blue)">Base</strong> · <strong style="color:var(--purple)">ERC-8004</strong> · <strong style="color:var(--orange)">x402</strong> · Noir Circuits</div>
+  <div class="hero-scroll">↓ SCROLL</div>
+</header>
+
+<!-- ==============================
+     THE PROBLEM
+     ============================== -->
+<section class="problem reveal">
+  <p class="problem-statement">
+    Today, generating a zero-knowledge proof requires<br>
+    <em>a portal</em>, <em>a wallet</em>, <em>a browser</em>, and <em>your time</em>.<br><br>
+    What if your <em>AI agent</em> could do it for you,<br>
+    or <span class="strike">better</span>, what if <em>any agent</em> could request it<br>
+    from a <em>trusted, onchain prover</em>?
+  </p>
+  <div class="problem-answer">That's proveragent.base.eth.</div>
+</section>
+
+<div class="sep"></div>
+
+<!-- ==============================
+     PROTOCOL FLOW
+     ============================== -->
+<section class="reveal">
+  <div class="section-label">Protocol Flow</div>
+  <h2 class="section-title">Three standards. One pipeline.</h2>
+  <p class="section-desc">
+    <strong style="color:var(--purple)">ERC-8004</strong> provides identity and reputation. <strong style="color:var(--orange)">x402</strong> handles payment.
+    The prover agent generates the proof. Zero trust assumptions.
+  </p>
+
+  <div class="flow-container">
+    <div class="flow-node">
+      <div class="node-icon">[agent]</div>
+      <div class="node-label">Your Agent</div>
+      <div class="node-sub">Needs a proof</div>
+    </div>
+    <div class="flow-arrow animated">→</div>
+    <div class="flow-node" style="border-color: rgba(167,139,250,0.3);">
+      <div class="node-icon">[registry]</div>
+      <div class="node-label">ERC-8004</div>
+      <div class="node-sub">Discover &amp; verify prover</div>
+    </div>
+    <div class="flow-arrow animated" style="animation-delay:0.3s">→</div>
+    <div class="flow-node" style="border-color: rgba(245,158,11,0.3);">
+      <div class="node-icon">[payment]</div>
+      <div class="node-label">x402</div>
+      <div class="node-sub">Pay per proof (USDC)</div>
+    </div>
+    <div class="flow-arrow animated" style="animation-delay:0.6s">→</div>
+    <div class="flow-node" style="border-color: rgba(214,177,92,0.3); position:relative;">
+      <div class="tee-badge">🔒 TEE</div>
+      <div class="node-icon">[prover]</div>
+      <div class="node-label">proveragent.base.eth</div>
+      <div class="node-sub">Generate ZK proof</div>
+    </div>
+    <div class="flow-arrow animated" style="animation-delay:0.9s">→</div>
+    <div class="flow-node" style="border-color: rgba(96,165,250,0.3);">
+      <div class="node-icon">[verify]</div>
+      <div class="node-label" style="color:var(--blue)">Base</div>
+      <div class="node-sub">Onchain verification</div>
+    </div>
+  </div>
+
+  <!-- ERC-8004 REGISTRIES -->
+  <div class="registry-grid">
+    <div class="registry-card">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(167,139,250,0.1);color:var(--purple);">ID</div>
+        <div>
+          <div class="card-title">Identity Registry</div>
+          <div class="card-subtitle">ERC-721 Agent NFT</div>
+        </div>
+      </div>
+      <div class="card-body">
+        AgentID: <span class="val">#592</span><br>
+        ENS: <span class="val">proveragent.base.eth</span><br>
+        Capabilities: <span class="val">zk-prove</span><br>
+        Circuits: <span class="val">coinbase_kyc, country, ...</span>
+      </div>
+      <div class="card-status status-live"><span class="status-dot"></span> ONCHAIN</div>
+    </div>
+
+    <div class="registry-card">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(245,158,11,0.1);color:var(--orange);">★</div>
+        <div>
+          <div class="card-title">Reputation Registry</div>
+          <div class="card-subtitle">Portable Trust Score</div>
+        </div>
+      </div>
+      <div class="card-body">
+        Total proofs: <span class="val">bootstrapping</span><br>
+        Success rate: <span class="val">bootstrapping</span><br>
+        Avg latency: <span class="val">bootstrapping</span><br>
+        Trust score: <span class="val">bootstrapping</span>
+      </div>
+      <div class="card-status status-next"><span class="status-dot"></span> BOOTSTRAPPING</div>
+    </div>
+
+    <div class="registry-card">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(96,165,250,0.1);color:var(--blue);">V</div>
+        <div>
+          <div class="card-title">Validation Registry</div>
+          <div class="card-subtitle">Independent Verification</div>
+        </div>
+      </div>
+      <div class="card-body">
+        Validator type: <span class="val">onchain verify()</span><br>
+        Re-execution: <span class="val">optional zkML</span><br>
+        TEE oracle: <span class="val">planned</span><br>
+        Proof audit trail: <span class="val">immutable</span>
+      </div>
+      <div class="card-status status-next"><span class="status-dot"></span> INTEGRATING</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ==============================
+     LIVE SIMULATION
+     ============================== -->
+<section class="reveal">
+  <div class="section-label">Live Protocol Simulation</div>
+  <h2 class="section-title">Agent-to-Agent proof delegation</h2>
+  <p class="section-desc">
+    A requesting agent discovers proveragent.base.eth, pays via <strong style="color:var(--orange)">x402</strong>, receives a valid ZK proof without ever touching a private key.
+  </p>
+
+  <div class="terminal">
+    <div class="terminal-bar">
+      <div class="terminal-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <div class="terminal-title">proveragent.base.eth · protocol trace</div>
+    </div>
+    <div class="terminal-body" id="terminalBody">
+      <!-- Lines will be injected by JS -->
+    </div>
+  </div>
+</section>
+
+<div class="sep"></div>
+
+<!-- ==============================
+     WHAT THE PROVER SEES
+     ============================== -->
+<section class="reveal">
+  <div class="section-label">Privacy Guarantee</div>
+  <h2 class="section-title">What the prover never sees</h2>
+  <p class="section-desc">
+    The user's agent sends only the minimum needed. Private keys never leave the user's device.
+  </p>
+
+  <div class="spec-grid">
+    <div class="spec-block">
+      <h3>Prover Receives</h3>
+      <div class="spec-row"><span class="spec-key">signature</span><span class="spec-val">signal_hash signed by user wallet</span></div>
+      <div class="spec-row"><span class="spec-key">pubkey</span><span class="spec-val">Recovered from signature (x, y)</span></div>
+      <div class="spec-row"><span class="spec-key">address</span><span class="spec-val">Public address (for attestation lookup)</span></div>
+      <div class="spec-row"><span class="spec-key">nonce</span><span class="spec-val">Anti-replay challenge from DApp</span></div>
+    </div>
+    <div class="spec-block">
+      <h3 class="red-label">Prover Never Sees</h3>
+      <div class="spec-row"><span class="spec-key">private_key</span><span class="spec-val" style="color:var(--red)">Never transmitted</span></div>
+      <div class="spec-row"><span class="spec-key">seed_phrase</span><span class="spec-val" style="color:var(--red)">Never transmitted</span></div>
+      <div class="spec-row"><span class="spec-key">tx_authority</span><span class="spec-val" style="color:var(--red)">Cannot sign other TX</span></div>
+      <div class="spec-row"><span class="spec-key">wallet_history</span><span class="spec-val" style="color:var(--red)">Not accessed</span></div>
+    </div>
+    <div class="spec-block">
+      <h3 style="color:var(--cyan)">TEE Execution Environment</h3>
+      <div class="spec-row"><span class="spec-key">runtime</span><span class="spec-val">Isolated enclave (TEE)</span></div>
+      <div class="spec-row"><span class="spec-key">data_source</span><span class="spec-val">EAS attestation (public onchain data only)</span></div>
+      <div class="spec-row"><span class="spec-key">circuit</span><span class="spec-val">Noir circuit executed inside TEE</span></div>
+      <div class="spec-row"><span class="spec-key">user_data</span><span class="spec-val" style="color:var(--gold)">Never enters the enclave</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="sep"></div>
+
+<!-- ==============================
+     CIRCUIT REGISTRY
+     ============================== -->
+<section class="reveal">
+  <div class="section-label">Circuit Registry</div>
+  <h2 class="section-title">Proof types the agent can generate</h2>
+  <p class="section-desc">
+    Starting with Coinbase KYC and Country verification. Expanding to DeFi, social, and age-gating circuits.
+  </p>
+
+  <div class="circuit-track">
+    <div class="circuit-card live">
+      <div class="cc-icon">[kyc]</div>
+      <div class="cc-name">coinbase_kyc</div>
+      <div class="cc-desc">100M+ verified users. Prove identity without revealing wallet address.</div>
+      <span class="cc-tag live">LIVE</span>
+    </div>
+    <div class="circuit-card live">
+      <div class="cc-icon">[geo]</div>
+      <div class="cc-name">country</div>
+      <div class="cc-desc">Prove country of residence for compliance. No personal data exposed.</div>
+      <span class="cc-tag live">LIVE</span>
+    </div>
+    <div class="circuit-card next">
+      <div class="cc-icon">[defi]</div>
+      <div class="cc-name">defi_holdings</div>
+      <div class="cc-desc">Prove asset balance threshold. Credit scoring without revealing portfolio.</div>
+      <span class="cc-tag next">NEXT</span>
+    </div>
+    <div class="circuit-card next">
+      <div class="cc-icon">[rwa]</div>
+      <div class="cc-name">rwa_ownership</div>
+      <div class="cc-desc">Prove real-world asset ownership onchain. Tokenized assets protected.</div>
+      <span class="cc-tag next">NEXT</span>
+    </div>
+    <div class="circuit-card soon">
+      <div class="cc-icon">[social]</div>
+      <div class="cc-name">farcaster</div>
+      <div class="cc-desc">Prove follower count ≥ N. Social reputation without revealing identity.</div>
+      <span class="cc-tag soon">SOON</span>
+    </div>
+    <div class="circuit-card soon">
+      <div class="cc-icon">[age]</div>
+      <div class="cc-name">age_verification</div>
+      <div class="cc-desc">18+ / 21+ proof for age-gated services. Zero birthday data exposed.</div>
+      <span class="cc-tag soon">SOON</span>
+    </div>
+  </div>
+</section>
+
+<div class="sep"></div>
+
+<!-- ==============================
+     BUILT ON ZKPROOFPORT
+     ============================== -->
+<section class="reveal">
+  <div class="highlight-box">
+    <div class="hb-label">
+      <img src="logo.jpg" alt="ZKProofport" class="hb-logo">
+      Built on ZKProofport
+    </div>
+    <p class="hb-text">
+      proveragent.base.eth extends the existing <strong>ZKProofport</strong> infrastructure:
+      the same <strong>Noir circuits</strong>, the same <strong>onchain verifiers</strong> on <strong style="color:var(--blue)">Base</strong>,
+      the same <strong>1-line SDK</strong> that DApps already integrate.<br><br>
+      Everything that works today ships into the agent economy <strong>as-is</strong>.<br>
+      No rewrites. No new trust assumptions. Just a new interface.
+    </p>
+  </div>
+</section>
+
+<!-- ==============================
+     CTA
+     ============================== -->
+<section class="cta-section reveal">
+  <div class="glow-line"></div>
+  <div class="cta-ens">proveragent.base.eth</div>
+  <p class="cta-line">
+    Discoverable via <strong style="color:var(--purple)">ERC-8004</strong> · Payable via <strong style="color:var(--orange)">x402</strong> · Verifiable on <strong style="color:var(--blue)">Base</strong>
+  </p>
+  <div class="cta-links">
+    <a href="https://zkproofport.com" class="cta-btn primary" target="_blank">[ zkproofport.com ]</a>
+    <a href="https://github.com/zkproofport" class="cta-btn" target="_blank">[ GitHub ]</a>
+    <a href="https://x.com/zkproofport" class="cta-btn" target="_blank">[ @zkproofport ]</a>
+  </div>
+</section>
+
+<footer>
+  <p>ZKProofport · Privacy-First Trust Infrastructure ·
+  <a href="https://eips.ethereum.org/EIPS/eip-8004" target="_blank">ERC-8004</a> ·
+  <a href="https://x402.org" target="_blank">x402</a></p>
+</footer>
+
+<!-- ==============================
+     SCRIPTS
+     ============================== -->
+<script>
+/* ============================================
+   SCROLL REVEAL
+   ============================================ */
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.15 });
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+/* ============================================
+   TERMINAL SIMULATION
+   ============================================ */
+const termLines = [
+  { text: '$ proveragent discover --circuit coinbase_kyc', cls: 't-white', delay: 0 },
+  { text: '> querying ERC-8004 Identity Registry on Base...', cls: 't-dim', delay: 600 },
+  { text: '  AgentID #592  proveragent.base.eth', cls: 't-purple', delay: 1000 },
+  { text: '  capability: zk-prove  |  circuits: coinbase_kyc, country', cls: 't-dim', delay: 1400 },
+  { text: '', cls: '', delay: 1600 },
+  { text: '> checking Reputation Registry...', cls: 't-dim', delay: 1800 },
+  { text: '  trust_score: 4.9  |  proofs_generated: 1,247  |  success: 99.8%', cls: 't-orange', delay: 2200 },
+  { text: '', cls: '', delay: 2400 },
+  { text: '$ proveragent request-proof \\', cls: 't-white', delay: 2800 },
+  { text: '    --circuit coinbase_kyc \\', cls: 't-white', delay: 3000 },
+  { text: '    --signature 0x4a2f...9c01 \\', cls: 't-white', delay: 3200 },
+  { text: '    --nonce a7b3c9d1', cls: 't-white', delay: 3400 },
+  { text: '', cls: '', delay: 3600 },
+  { text: '> x402: payment required, 0.05 USDC', cls: 't-orange', delay: 3900 },
+  { text: '> x402: sending payment to 0x5a3e...2f0c...  confirmed', cls: 't-green', delay: 4400 },
+  { text: '', cls: '', delay: 4600 },
+  { text: '> fetching attestation from EAS (Base)...', cls: 't-dim', delay: 4800 },
+  { text: '  attestation_tx: 0xf7e2...b104', cls: 't-dim', delay: 5200 },
+  { text: '> building Merkle proof for signer verification...', cls: 't-dim', delay: 5500 },
+  { text: '> executing Noir circuit [coinbase_kyc]...', cls: 't-blue', delay: 5800 },
+  { text: '> generating UltraHonk proof...', cls: 't-blue', delay: 6200 },
+  { text: '', cls: '', delay: 7000 },
+  { text: 'PROOF GENERATED  (3.1s)', cls: 't-green', delay: 7400 },
+  { text: '  proof: 0x0a8b...3f21  (2,416 bytes)', cls: 't-dim', delay: 7800 },
+  { text: '  public_inputs: [signal_hash, merkle_root]', cls: 't-dim', delay: 8100 },
+  { text: '', cls: '', delay: 8300 },
+  { text: '> submitting feedback to Reputation Registry...  done', cls: 't-dim', delay: 8500 },
+  { text: '', cls: '', delay: 8700 },
+  { text: 'PROOF DELIVERED  |  0 bytes of user data exposed', cls: 't-green', delay: 9000 },
+  { text: '  verifier: 0x4C16...0F6d (Base)  |  status: VALID', cls: 't-green', delay: 9400 },
+];
+
+let termStarted = false;
+const termObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting && !termStarted) {
+      termStarted = true;
+      runTerminal();
+    }
+  });
+}, { threshold: 0.3 });
+
+const termEl = document.getElementById('terminalBody');
+termObs.observe(termEl.closest('.terminal'));
+
+function runTerminal() {
+  termLines.forEach((line, i) => {
+    setTimeout(() => {
+      const div = document.createElement('div');
+      div.className = line.cls;
+      div.textContent = line.text;
+      if (i === termLines.length - 1) {
+        div.classList.add('cursor-blink');
+      }
+      termEl.appendChild(div);
+      termEl.scrollTop = termEl.scrollHeight;
+    }, line.delay);
+  });
+}
+
+</script>
+</body>
+</html>
