@@ -169,6 +169,52 @@ body {
   animation: fadeUp 0.6s 1.5s forwards;
 }
 .hero-tagline strong { font-weight: 700; }
+.hero-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 2.4rem;
+  padding: 1rem 2.8rem;
+  font-family: var(--mono);
+  font-size: 1.3rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #fff;
+  background: linear-gradient(135deg, var(--purple), #6366f1);
+  border: none;
+  border-radius: 6px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 24px rgba(147,112,219,0.3);
+  opacity: 0;
+  animation: fadeUp 0.6s 1.8s forwards;
+}
+.hero-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 40px rgba(147,112,219,0.5);
+  background: linear-gradient(135deg, #9370DB, #818cf8);
+}
+.hero-cta .cta-icon {
+  font-size: 1.4rem;
+}
+.hero-video {
+  margin-top: 3.2rem;
+  width: 100%;
+  max-width: 72rem;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1.5px solid var(--border);
+  box-shadow: 0 0 60px rgba(214,177,92,0.08);
+  opacity: 0;
+  animation: fadeUp 0.8s 2.2s forwards;
+}
+.hero-video iframe {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  display: block;
+  border-radius: 11px;
+}
 .hero-scroll {
   position: absolute;
   bottom: 3.2rem;
@@ -177,7 +223,7 @@ body {
   color: var(--muted);
   letter-spacing: 0.15em;
   opacity: 0;
-  animation: fadeUp 0.6s 2s forwards, pulse 2s 2s infinite;
+  animation: fadeUp 0.6s 3s forwards, pulse 2s 3s infinite;
 }
 @keyframes fadeUp {
   from { opacity:0; transform:translateY(16px); }
@@ -787,6 +833,12 @@ footer a:hover {
   <h1 class="hero-title">proveragent.base.eth</h1>
   <p class="hero-subtitle">Autonomous ZK proof generation.<br>Discoverable. Verifiable. Payable.</p>
   <div class="hero-tagline"><strong style="color:var(--blue)">Base</strong> · <strong style="color:var(--purple)">ERC-8004</strong> · <strong style="color:var(--orange)">x402</strong> · Noir Circuits</div>
+  <a href="https://testnet.8004scan.io/agents/base-sepolia/592" target="_blank" class="hero-cta">
+    <span class="cta-icon">🔍</span> View on 8004 Scan
+  </a>
+  <div class="hero-video">
+    <iframe src="https://www.youtube.com/embed/yrDDZGE9Lvw?autoplay=1&mute=1&loop=1&playlist=yrDDZGE9Lvw&controls=0&modestbranding=1&rel=0" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+  </div>
   <div class="hero-scroll">↓ SCROLL</div>
 </header>
 
